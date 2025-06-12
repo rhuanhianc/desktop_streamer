@@ -1,32 +1,29 @@
-use std::{thread, time::{self, Duration, Instant}};
-use xcap::Monitor;
+use image::buffer;
+use screenshots::Screen;
+use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Teste de captura de tela");
+    let start = Instant::now();
 
-    let monitors = Monitor::all()?;
-    println!("Numero de monirores: {}", monitors.len());
+    let screens = Screen::all()?;
+    println!("Monitores encontrados: {}", screens.len());
 
-    // let primary_monitor = monitors
-    //     .into_iter()
-    //     .find(|m| m.is_primary().is_ok_and(|primary| primary))
-    //     .ok_or("Não foi encontrado nenhum monitor")?;
+    for (i, screen) in screens.iter().enumerate() {
+        println!(
+            "Capturando monitor {} (ID: {}, Resolução: {}x{})",
+            i, screen.display_info.id, screen.display_info.width, screen.display_info.height
+        );
+        
+        let image = screen.capture()?;
 
-    for (i, monitor) in monitors.iter().enumerate() {
-        let monitor_name = monitor.name()?;
-        println!("Moninor sendo capturado {}", monitor_name);
-
-        let start_time = Instant::now();
-        let image = monitor.capture_image()?;
-
-        let durarion = start_time.elapsed();
-        println!("Captura de tela em: {:?}", durarion);
-
-        let file_name = format!("screenshot-monit-{}.png", i);
-
-        image.save(file_name)?;
-        println!("Imagem salva");
-        thread::sleep(Duration::from_millis(250));
+        let file_name = format!("screenshot-{}.png", i);
+        image.save(&file_name)?;
+        
+        println!("Imagem salva como '{}'", file_name);
     }
+
+    let duration = start.elapsed();
+    println!("\nTodas as capturas concluídas com sucesso em {:?}", duration);
+
     Ok(())
 }
