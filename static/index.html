@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desktop Streamer WebRTC v2.0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 12h18m-18-6h18m-18 12h18"/>
+        </svg>
+    </button>
+
+    <!-- Stats Panel Toggle -->
+    <button class="stats-toggle" id="statsToggle" title="Alternar estatísticas">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 12h2v5H7v-5zm4-7h2v12h-2V5zm4 3h2v9h-2V8z"/>
+        </svg>
+    </button>
+
+    <div class="container" id="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 16V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM5 4h14v12H5V4z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span class="logo-text">Desktop Streamer</span>
+                    <span class="vr-badge">VR</span>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="source-group">
+                    <select id="sourceSelect" class="source-select">
+                        <optgroup label="Telas">
+                            <option value="screen">🖥️ Tela Principal</option>
+                        </optgroup>
+                        <optgroup label="Câmeras">
+                            <option value="camera-0">📹 Câmera Padrão</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Desconectado</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Audio Controls Panel -->
+        <div class="audio-panel" id="audioPanel">
+            <div class="audio-controls-group">
+                <label class="audio-toggle">
+                    <input type="checkbox" id="enableAudio" checked onchange="toggleAudio()">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">🔊 Áudio do Sistema</span>
+                </label>
+                
+                <label class="audio-toggle">
+                    <input type="checkbox" id="enableMicrophone" onchange="toggleMicrophone()">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">🎤 Microfone</span>
+                </label>
+                
+                <div class="audio-source-group" id="audioSourceGroup" style="display: flex;">
+                    <select id="audioSourceSelect" class="audio-source-select">
+                        <option value="">Selecione fonte de áudio</option>
+                        <optgroup label="🚀 Recomendado">
+                            <option value="desktop_streamer_virtual" selected>🔊 Driver de Áudio Virtual</option>
+                        </optgroup>
+                        <optgroup label="Microfone">
+                            <option value="microphone">🎤 Microfone Padrão</option>
+                        </optgroup>
+                        <optgroup label="Sistema">
+                            <option value="system">🔊 Áudio do Sistema</option>
+                        </optgroup>
+                    </select>
+                    
+
+                    
+                    <div class="audio-quality">
+                        <label for="audioBitrate">Qualidade:</label>
+                        <select id="audioBitrate" class="audio-bitrate-select">
+                            <option value="96000">96 kbps</option>
+                            <option value="128000" selected>128 kbps</option>
+                            <option value="256000">256 kbps</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Video Area -->
+        <div class="main-view">
+            <div class="video-container" id="videoContainer">
+                <!-- Video Controls Overlay -->
+                <div class="video-controls" id="videoControls">
+                    <button class="control-btn volume-btn" id="volumeBtn" title="Alternar som" onclick="toggleVideoMute()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="volumeIcon">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                    </button>
+                    <button class="control-btn fullscreen-btn" id="fullscreenBtn" title="Tela cheia">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                        </svg>
+                    </button>
+                    <button class="control-btn pip-btn" id="pipBtn" title="Picture-in-Picture">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <video id="remoteVideo" autoplay playsinline controls></video>
+                <div class="placeholder" id="placeholder">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 16V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM5 4h14v12H5V4z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <p>Aguardando stream...</p>
+                    <small>Selecione a fonte e clique em Conectar</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="controls">
+            <div class="controls-left">
+                <button class="btn primary" id="connectBtn" onclick="connect()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    Conectar
+                </button>
+                <button class="btn danger" id="disconnectBtn" onclick="disconnect()" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="6" width="12" height="12"/>
+                    </svg>
+                    Desconectar
+                </button>
+            </div>
+            
+            <div class="controls-center">
+                <div class="quality-info" id="qualityInfo">
+                    <span id="quickFps">0fps</span>
+                    <span id="quickBitrate">0Mbps</span>
+                    <span id="quickRes">-</span>
+                </div>
+            </div>
+            
+            <div class="controls-right">
+                <button class="btn secondary" id="vrBtn" onclick="toggleVR()" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.26 7.8a4.82 4.82 0 0 0-3.93-2.44 3.91 3.91 0 0 0-2.54 1.09 10.58 10.58 0 0 0-1.52 1.71 11 11 0 0 0-1.52-1.71 3.91 3.91 0 0 0-2.54-1.09A4.82 4.82 0 0 0 4.26 7.8 4.27 4.27 0 0 0 3 11.33a4.27 4.27 0 0 0 1.26 3.53c.57.57 1.24 1.05 2 1.43l.11.05c.07.03.14.06.21.09l.09.04c.07.03.14.06.21.09l.11.05c.76.38 1.43.86 2 1.43a4.27 4.27 0 0 0 3.53 1.26 4.27 4.27 0 0 0 3.53-1.26c.57-.57 1.24-1.05 2-1.43l.11-.05c.07-.03.14-.06.21-.09l.09-.04c.07-.03.14-.06.21-.09l.11-.05c.76-.38 1.43-.86 2-1.43a4.27 4.27 0 0 0 1.26-3.53 4.27 4.27 0 0 0-1.26-3.53z"/>
+                    </svg>
+                    <span class="btn-text">VR</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Sidebar -->
+    <div class="stats-sidebar" id="statsSidebar">
+        <div class="sidebar-header">
+            <h3>📊 Estatísticas</h3>
+            <button class="close-btn" id="closeSidebar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="stats-content">
+            <div class="stats-section">
+                <h4>Performance</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">FPS</span>
+                        <span class="stat-value" id="fps">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Bitrate</span>
+                        <span class="stat-value" id="bitrate">0 Mbps</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Resolução</span>
+                        <span class="stat-value" id="resolution">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Latência</span>
+                        <span class="stat-value" id="latency">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-section">
+                <h4>Dados</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Enviados</span>
+                        <span class="stat-value" id="bytesSent">0 MB</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Perdidos</span>
+                        <span class="stat-value" id="packetsLost">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-section vr-section">
+                <h4>🥽 Configurações VR</h4>
+                <div class="vr-options">
+                    <label class="vr-option">
+                        <input type="checkbox" id="vrStereo" checked>
+                        <span>Visão Estereoscópica</span>
+                    </label>
+                    <label class="vr-option">
+                        <input type="checkbox" id="vrTracking">
+                        <span>Rastreamento</span>
+                    </label>
+                    <label class="vr-option">
+                        <input type="checkbox" id="vrImmersive" checked>
+                        <span>Modo Imersivo</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="logs-section">
+            <div class="logs-header">
+                <h4>📝 Logs</h4>
+                <button class="clear-logs-btn" id="clearLogsBtn">Limpar</button>
+            </div>
+            <div class="log-container" id="logContainer"></div>
+        </div>
+    </div>
+    
+    <!-- VR Mode Container -->
+    <div class="vr-mode" id="vrMode">
+        <video id="vrVideo" class="vr-video" autoplay playsinline></video>
+        <button class="vr-exit-btn" onclick="exitVR()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
